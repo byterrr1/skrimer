@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問題</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="red-page">
+    <div class="timer-container">
+        <div id="timer" class="timer">01:00</div>
+    </div>
+    
+    <div class="equations-container">
+        <div class="equation-item">
+            <span class="equation">2x + 5 = 13</span>
+            <input type="text" class="answer-input" placeholder="x = ?" data-answer="4">
+        </div>
+        <div class="equation-item">
+            <span class="equation">3y - 7 = 14</span>
+            <input type="text" class="answer-input" placeholder="y = ?" data-answer="7">
+        </div>
+        <div class="equation-item">
+            <span class="equation">4z + 9 = 25</span>
+            <input type="text" class="answer-input" placeholder="z = ?" data-answer="4">
+        </div>
+        <div class="equation-item">
+            <span class="equation">5a - 12 = 18</span>
+            <input type="text" class="answer-input" placeholder="a = ?" data-answer="6">
+        </div>
+        <div class="equation-item">
+            <span class="equation">6b + 15 = 33</span>
+            <input type="text" class="answer-input" placeholder="b = ?" data-answer="3">
+        </div>
+        <div class="equation-item">
+            <span class="equation">7c - 20 = 29</span>
+            <input type="text" class="answer-input" placeholder="c = ?" data-answer="7">
+        </div>
+        <div class="equation-item">
+            <span class="equation">8d + 11 = 43</span>
+            <input type="text" class="answer-input" placeholder="d = ?" data-answer="4">
+        </div>
+        <div class="equation-item">
+            <span class="equation">9e - 16 = 38</span>
+            <input type="text" class="answer-input" placeholder="e = ?" data-answer="6">
+        </div>
+    </div>
+    
+    <div class="submit-container">
+        <button id="submit-btn" class="submit-btn">送信</button>
+    </div>
+    
+    <audio id="bg-music" loop preload="auto">
+        <source src="sound/site.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // Background music setup
+        const bgMusic = document.getElementById('bg-music');
+        bgMusic.volume = 0.1;
+        
+        // Function to play music
+        function playMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(function(error) {
+                    // Will try again on user interaction
+                });
+            }
+        }
+        
+        // Try to play immediately
+        playMusic();
+        
+        // Try to play on page load
+        window.addEventListener('load', playMusic);
+        
+        // Play on any user interaction
+        document.addEventListener('click', playMusic, { once: true });
+        document.addEventListener('keydown', playMusic, { once: true });
+        document.addEventListener('mousemove', playMusic, { once: true });
+        document.addEventListener('touchstart', playMusic, { once: true });
+        
+        // Also try when user interacts with inputs
+        document.querySelectorAll('.answer-input').forEach(function(input) {
+            input.addEventListener('focus', playMusic, { once: true });
+            input.addEventListener('input', playMusic, { once: true });
+        });
+        let timeLeft = 60;
+        const timerElement = document.getElementById('timer');
+        const submitBtn = document.getElementById('submit-btn');
+        let timerInterval;
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                window.location.href = 'screamer.html';
+            }
+            timeLeft--;
+        }
+        
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+        
+        submitBtn.addEventListener('click', function() {
+            clearInterval(timerInterval);
+            window.location.href = 'screamer.html';
+        });
+    </script>
+</body>
+</html>
+

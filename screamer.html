@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>警告</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="red-page screamer-page">
+    <div id="screamer" class="screamer hidden">
+        <img src="img/skrimer.jpg" alt="screamer" class="screamer-image">
+    </div>
+    
+    <div id="flash" class="flash hidden"></div>
+    
+    <audio id="scream-audio" preload="auto">
+        <source src="sound/fsdsdfhh.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        const screamer = document.getElementById('screamer');
+        const flash = document.getElementById('flash');
+        const screamAudio = document.getElementById('scream-audio');
+        let flashInterval;
+        let flashCount = 0;
+        const maxFlashes = 15;
+        
+        // Set volume to maximum
+        screamAudio.volume = 1.0;
+        
+        // Function to play scream sound
+        function playScream() {
+            screamAudio.currentTime = 0;
+            const playPromise = screamAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(function(error) {
+                    // Try again
+                    setTimeout(function() {
+                        screamAudio.play().catch(function(e) {
+                            console.log("Audio play failed:", e);
+                        });
+                    }, 100);
+                });
+            }
+        }
+        
+        // Unlock audio on any user interaction (since user came from previous page)
+        function unlockAudio() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            } catch(e) {}
+        }
+        
+        // Unlock audio immediately and on interactions
+        unlockAudio();
+        window.addEventListener('load', unlockAudio);
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('mousemove', unlockAudio, { once: true });
+        document.addEventListener('keydown', unlockAudio, { once: true });
+        
+        setTimeout(function() {
+            // Unlock audio before playing
+            unlockAudio();
+            
+            // Sudden appearance - no animation
+            screamer.classList.remove('hidden');
+            
+            // Play scream sound immediately at maximum volume
+            playScream();
+            
+            // Start white flashes immediately - faster and more frequent
+            flashInterval = setInterval(function() {
+                flash.classList.toggle('active');
+                flashCount++;
+                
+                if (flashCount >= maxFlashes * 2) {
+                    clearInterval(flashInterval);
+                    flash.classList.remove('active');
+                }
+            }, 60);
+        }, 10000);
+    </script>
+</body>
+</html>
+
