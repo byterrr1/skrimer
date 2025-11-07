@@ -59,9 +59,43 @@
         const bgMusic = document.getElementById('bg-music');
         bgMusic.volume = 0.1;
         
+        // Ensure loop is enabled
+        bgMusic.loop = true;
+        
+        // Function to restart music
+        function restartMusic() {
+            if (bgMusic.paused || bgMusic.ended) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(function(error) {
+                    // Will try again
+                });
+            }
+        }
+        
+        // Add event listener to restart music if it ends (backup for loop)
+        bgMusic.addEventListener('ended', function() {
+            restartMusic();
+        });
+        
+        // Monitor music state and restart if it stops unexpectedly
+        let musicCheckInterval = setInterval(function() {
+            // Check if music is paused but should be playing
+            if (bgMusic.paused && !bgMusic.ended && bgMusic.readyState >= 2) {
+                restartMusic();
+            }
+            // Also check if music is near the end (within last second) and restart early
+            if (!bgMusic.paused && bgMusic.duration > 0) {
+                const timeRemaining = bgMusic.duration - bgMusic.currentTime;
+                if (timeRemaining < 1 && timeRemaining > 0) {
+                    // Restart music slightly before it ends to ensure smooth looping
+                    bgMusic.currentTime = 0;
+                }
+            }
+        }, 100);
+        
         // Function to play music
         function playMusic() {
-            if (bgMusic.paused) {
+            if (bgMusic.paused || bgMusic.ended) {
                 bgMusic.play().catch(function(error) {
                     // Will try again on user interaction
                 });
@@ -74,17 +108,24 @@
         // Try to play on page load
         window.addEventListener('load', playMusic);
         
-        // Play on any user interaction
-        document.addEventListener('click', playMusic, { once: true });
-        document.addEventListener('keydown', playMusic, { once: true });
-        document.addEventListener('mousemove', playMusic, { once: true });
-        document.addEventListener('touchstart', playMusic, { once: true });
+        // Play on any user interaction (without once to allow multiple triggers)
+        document.addEventListener('click', playMusic);
+        document.addEventListener('keydown', playMusic);
+        document.addEventListener('mousemove', playMusic);
+        document.addEventListener('touchstart', playMusic);
         
         // Also try when user interacts with inputs
         document.querySelectorAll('.answer-input').forEach(function(input) {
-            input.addEventListener('focus', playMusic, { once: true });
-            input.addEventListener('input', playMusic, { once: true });
+            input.addEventListener('focus', playMusic);
+            input.addEventListener('input', playMusic);
         });
+        
+        // Clean up interval when page unloads
+        window.addEventListener('beforeunload', function() {
+            clearInterval(musicCheckInterval);
+        });
+        
+        // Timer setup
         let timeLeft = 60;
         const timerElement = document.getElementById('timer');
         const submitBtn = document.getElementById('submit-btn');
@@ -97,16 +138,27 @@
             
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
+                // Stop music before redirecting
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+                // Redirect to screamer page
                 window.location.href = 'screamer.html';
+                return;
             }
             timeLeft--;
         }
         
+        // Start timer
         timerInterval = setInterval(updateTimer, 1000);
         updateTimer();
         
+        // Submit button handler
         submitBtn.addEventListener('click', function() {
             clearInterval(timerInterval);
+            // Stop music before redirecting
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            // Redirect to screamer page
             window.location.href = 'screamer.html';
         });
     </script>
